@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Deteksi Asap / Awan</title>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #f4f6f9;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #333;
+    }
+
+    .card {
+      width: 340px;
+      background: #ffffff;
+      border-radius: 10px;
+      padding: 22px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 18px;
+      margin-bottom: 14px;
+      font-weight: 600;
+    }
+
+    .drop-area {
+      border: 2px dashed #b6c2d4;
+      padding: 22px;
+      border-radius: 8px;
+      background: #fafbfc;
+      cursor: pointer;
+      margin-bottom: 12px;
+      font-size: 13px;
+      color: #6b7280;
+      transition: 0.25s;
+    }
+
+    .drop-area:hover,
+    .drop-area.dragover {
+      background: #eef3f8;
+      border-color: #4a90e2;
+    }
+
+    input[type=file] { display: none; }
+
+    button {
+      background: #4a90e2;
+      color: white;
+      padding: 8px 18px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.3s;
+      margin-top: 8px;
+    }
+
+    button:hover { background: #3b78c5; }
+
+    .loader {
+      display: none;
+      margin: 14px auto;
+      border: 4px solid #d5ddeb;
+      border-top: 4px solid #4a90e2;
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .result-box {
+      margin-top: 12px;
+      padding: 10px;
+      background: #f7f9fc;
+      border-radius: 7px;
+      border: 1px solid #e3e8f0;
+      text-align: left;
+      font-size: 13px;
+    }
+
+    .label { margin-top: 6px; }
+
+    .bar {
+      height: 8px;
+      background: #d9e2ee;
+      border-radius: 5px;
+      overflow: hidden;
+      margin-top: 3px;
+    }
+
+    .bar-fill {
+      height: 100%;
+      width: var(--value);
+      transition: width 0.5s ease-out;
+      border-radius: 5px;
+    }
+
+    .asap-fill { background: #d9534f; }
+    .awan-fill { background: #5dade2; }
+
+    img {
+      max-width: 100%;
+      max-height: 120px;
+      object-fit: cover;
+      border-radius: 8px;
+      border: 1px solid #e1e7ef;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+
+<body>
+<div class="card">
+  <h1>Deteksi Asap / Awan</h1>
+
+  <form id="uploadForm" method="POST" enctype="multipart/form-data">
+    <div class="drop-area" id="dropArea">
+      <span id="dropText">Klik atau seret gambar ke sini</span>
+    </div>
+
+    <input type="file" name="image" id="fileInput" required>
+    <button type="submit">Prediksi</button>
+  </form>
+
+  <div class="loader" id="loader"></div>
+
+  {% if asap %}
+  <div class="result-box">
+
+    <div class="label">Asap: {{ asap }}%</div>
+    <div class="bar"><div class="bar-fill asap-fill" style="--value: {{ asap }}%;"></div></div>
+
+    <div class="label">Awan: {{ awan }}%</div>
+    <div class="bar"><div class="bar-fill awan-fill" style="--value: {{ awan }}%;"></div></div>
+
+  </div>
+
+  <img src="{{ image_path }}" alt="Gambar Hasil">
+  {% endif %}
+</div>
+
+<script>
+  const dropArea = document.getElementById("dropArea");
+  const dropText = document.getElementById("dropText");
+  const fileInput = document.getElementById("fileInput");
+  const loader = document.getElementById("loader");
+  const form = document.getElementById("uploadForm");
+
+  dropArea.onclick = () => fileInput.click();
+  dropArea.addEventListener("dragover", e => { e.preventDefault(); dropArea.classList.add("dragover"); });
+  dropArea.addEventListener("dragleave", () => dropArea.classList.remove("dragover"));
+  dropArea.addEventListener("drop", e => { e.preventDefault(); dropArea.classList.remove("dragover"); fileInput.files = e.dataTransfer.files; updateLabel(); });
+  fileInput.addEventListener("change", updateLabel);
+
+  function updateLabel() {
+    dropText.textContent = fileInput.files.length ? "📷 " + fileInput.files[0].name : "Klik atau seret gambar ke sini";
+  }
+
+  form.onsubmit = () => { loader.style.display = "block"; };
+</script>
+
+</body>
+</html>
